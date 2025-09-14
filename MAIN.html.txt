@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Financial Behaviour of Youth — Project</title>
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+      :root {
+        --bg-dark: #0d1a26; /* Deep space blue */
+        --card-dark: #132332; /* Slightly lighter blue */
+        --primary-accent: #00e5ff; /* Glowing Cyan/Electric Blue */
+        --text-light: #e0f7fa;
+        --text-muted: #b0bec5;
+        --border-color: rgba(0, 229, 255, 0.2);
+      }
+      body {
+        margin: 0;
+        font-family: 'Segoe UI', system-ui, Arial, sans-serif;
+        background: var(--bg-dark);
+        color: var(--text-light);
+        background-image:
+            linear-gradient(rgba(0, 229, 255, 0.05) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0, 229, 255, 0.05) 1px, transparent 1px);
+        background-size: 30px 30px;
+      }
+      header {
+        background: linear-gradient(90deg, #132332, #0d1a26);
+        color: white;
+        padding: 28px 18px;
+        text-align: center;
+        border-bottom: 1px solid var(--border-color);
+        position: relative;
+      }
+      header h1 {
+        margin: 0;
+        font-size: 1.8rem;
+        letter-spacing: 0.5px;
+        color: var(--primary-accent);
+        text-shadow: 0 0 8px rgba(0, 229, 255, 0.5);
+      }
+      header p {
+        margin: 8px 0 0;
+        opacity: 0.9;
+        color: var(--text-muted);
+      }
+      nav.tabs {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        flex-wrap: wrap;
+        padding: 14px;
+        background: rgba(13, 26, 38, 0.8);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        border-bottom: 1px solid var(--border-color);
+      }
+      nav.tabs button {
+        background: transparent;
+        border: 1px solid var(--border-color);
+        padding: 9px 14px;
+        cursor: pointer;
+        border-radius: 8px;
+        color: var(--text-light);
+        font-weight: 600;
+        transition: all 0.2s ease;
+      }
+      nav.tabs button:hover {
+        background: var(--primary-accent);
+        color: #0d1a26;
+        border-color: var(--primary-accent);
+        box-shadow: 0 0 12px rgba(0, 229, 255, 0.5);
+      }
+      nav.tabs button.active {
+        background: var(--primary-accent);
+        color: #0d1a26;
+        border-color: var(--primary-accent);
+        box-shadow: 0 0 18px rgba(0, 229, 255, 0.6);
+      }
+      .container {
+        max-width: 1200px;
+        margin: 22px auto;
+        padding: 0 14px;
+      }
+      .card {
+        background: var(--card-dark);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 22px;
+        margin-bottom: 22px;
+        box-shadow: 0 0 15px rgba(0, 229, 255, 0.07);
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 18px;
+      }
+      canvas {
+        width: 100% !important;
+        height: 340px !important;
+        background: transparent;
+      }
+      .section-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+        color: var(--primary-accent);
+      }
+      .muted { color: var(--text-muted); font-size: 0.95rem; }
+      footer {
+        text-align: center;
+        margin: 36px 0;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+      }
+      .instructions { font-size: 1.05rem; color: var(--text-light); margin-bottom: 18px; line-height: 1.7; }
+      .small { font-size: 0.95rem; color: var(--text-muted); line-height: 1.6; }
+      h4 { color: var(--text-light); }
+      
+      /* --- ENHANCEMENTS START HERE --- */
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      section.card {
+        animation: fadeIn 0.6s ease-out forwards;
+      }
+
+      nav.tabs button:focus-visible {
+        outline: 2px solid var(--primary-accent);
+        outline-offset: 2px;
+        box-shadow: 0 0 12px rgba(0, 229, 255, 0.5);
+      }
+      
+      .print-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: transparent;
+        border: 1px solid var(--border-color);
+        color: var(--text-light);
+        padding: 8px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .print-btn:hover {
+        background: var(--primary-accent);
+        color: var(--bg-dark);
+      }
+
+      .chart-insight {
+        text-align: center;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid var(--border-color);
+        color: var(--text-muted);
+        font-style: italic;
+      }
+
+      .highlight-card h2 {
+        color: var(--primary-accent);
+        margin: 0 0 5px 0;
+        font-size: 2.5rem;
+      }
+
+      /* Styles for printing */
+      @media print {
+        body {
+          background: white;
+          color: black;
+          font-family: 'Times New Roman', serif;
+        }
+        header, nav.tabs, footer, .print-btn {
+          display: none;
+        }
+        .container {
+          max-width: 100%;
+          margin: 0;
+          padding: 0;
+        }
+        .card {
+          box-shadow: none;
+          border: 1px solid #ccc;
+          page-break-inside: avoid; /* Tries to keep cards from splitting across pages */
+          margin-top: 20px;
+        }
+        h1, h2, h4, .section-title {
+          color: black !important;
+          text-shadow: none;
+        }
+        .muted, .small, .instructions, .chart-insight {
+          color: #333 !important;
+        }
+        .grid {
+            display: block; /* Stacks charts vertically for printing */
+        }
+      }
+      /* --- ENHANCEMENTS END HERE --- */
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Financial Behaviour of Youth — Interactive Report</h1>
+    <p>A comprehensive analysis of spending, saving, and investment habits among young adults.</p>
+    <p id="totalRespondents" class="muted"></p>
+    <!-- NEW: Print Button -->
+    <button class="print-btn" onclick="window.print()">🖨️ Print / Export to PDF</button>
+</header>
+
+<nav class="tabs" aria-label="Sections">
+    <button class="tab-btn active" data-target="overview" aria-label="View Project Overview">Overview</button>
+    <button class="tab-btn" data-target="demographics" aria-label="View Demographics Section">Demographics</button>
+    <button class="tab-btn" data-target="income" aria-label="View Income & Savings Section">Income & Savings</button>
+    <button class="tab-btn" data-target="spending" aria-label="View Spending Habits Section">Spending Habits</button>
+    <button class="tab-btn" data-target="literacy" aria-label="View Financial Literacy Section">Financial Literacy</button>
+    <button class="tab-btn" data-target="attitudes" aria-label="View Attitudes & Confidence Section">Attitudes & Confidence</button>
+    <button class="tab-btn" data-target="investment" aria-label="View Investment Behaviour Section">Investment Behaviour</button>
+    <button class="tab-btn" data-target="conclusion" aria-label="View Conclusion Section">Conclusion</button>
+</nav>
+
+<div class="container">
+
+    <!-- OVERVIEW -->
+    <section id="overview" class="card">
+        <div class="section-title">
+            <h2 style="margin:0">Project Overview & Statement of Intent</h2>
+        </div>
+        
+        <!-- NEW: Key Statistics Highlight Card -->
+        <div class="card highlight-card" style="border-color: var(--primary-accent);">
+            <h4 style="margin-top:0; text-align:center;">Project Highlights at a Glance</h4>
+            <div style="display: flex; flex-wrap: wrap; justify-content: space-around; text-align: center; margin-top: 20px;">
+                <div style="padding: 10px;">
+                    <h2>45%</h2>
+                    <p class="muted">Cite "Lack of Knowledge" as a top barrier to investing.</p>
+                </div>
+                <div style="padding: 10px;">
+                    <h2>63%</h2>
+                    <p class="muted">Rely on informal sources like Family or Social Media for financial advice.</p>
+                </div>
+                <div style="padding: 10px;">
+                    <h2>71%</h2>
+                    <p class="muted">Have never attended a formal financial literacy program.</p>
+                </div>
+            </div>
+        </div>
+
+        <p class="instructions">
+            In an era of rapid digital transformation and economic complexity, the financial journey of young adults begins earlier and with higher stakes than ever before. As this digital-native generation steps into a world of instant payments, online investing, and algorithm-driven marketing, their foundational understanding of financial principles is not just an advantage—it is a necessity. However, a significant gap often exists between their technological fluency and their financial literacy.
+        </p>
+         <div class="card">
+            <h4 style="margin-top:0">Project Intention</h4>
+            <p class="small">The primary objective of this project was to move beyond anecdotal evidence and conduct a quantitative analysis of the financial behaviors, attitudes, and awareness levels prevalent among today's youth. We aimed to create a data-driven snapshot that could answer critical questions: How do young people source and manage their income? What are their real-world spending and saving habits? Where are the critical knowledge gaps in their financial literacy, particularly concerning long-term concepts like investment and inflation? By illuminating these patterns, this study intends to provide actionable insights for educators, financial institutions, and policymakers seeking to empower the next generation with sound financial skills.</p>
+        </div>
+
+         <div class="card">
+            <h4 style="margin-top:0">Methodology & Execution</h4>
+            <p class="small">To achieve this, we designed and administered a comprehensive 31-question survey targeting the youth demographic. The survey was structured across five key thematic pillars: Demographics, Income & Savings, Spending Habits, Financial Literacy, and Investment Behaviour. Upon collecting and aggregating the responses, we deliberately chose to innovate beyond traditional static reports. Instead, we have synthesized the findings into this dynamic, interactive web-based dashboard. This platform allows for a more intuitive and engaging exploration of the data, bringing the results to life through responsive visualizations. The following sections present a detailed breakdown of our findings.</p>
+        </div>
+    </section>
+
+    <!-- Demographics -->
+    <section id="demographics" class="card" style="display:none">
+        <div class="section-title"><h2 style="margin:0">Demographics</h2></div>
+        <div class="grid">
+            <div class="card">
+                <h4 style="margin-top:0">Age distribution</h4><canvas id="chartAge"></canvas>
+                <p class="chart-insight">The largest respondent group is 19-year-olds, indicating a predominantly undergraduate student sample.</p>
+            </div>
+            <div class="card">
+                <h4 style="margin-top:0">Gender</h4><canvas id="chartGender"></canvas>
+                <p class="chart-insight">The survey saw a significantly higher participation rate from male respondents compared to female respondents.</p>
+            </div>
+            <div class="card">
+                <h4 style="margin-top:0">Education & Employment</h4><canvas id="chartEduEmp"></canvas>
+                <p class="chart-insight">The vast majority of participants are still studying, with part-time work being the most common form of employment.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Income & Savings -->
+    <section id="income" class="card" style="display:none">
+        <div class="section-title"><h2 style="margin:0">Income & Savings Behaviour</h2></div>
+        <div class="grid">
+            <div class="card">
+                <h4 style="margin-top:0">Income source</h4><canvas id="chartIncomeSource"></canvas>
+                <p class="chart-insight">A significant portion of respondents (nearly 60%) do not have a personal source of income, relying on other means.</p>
+            </div>
+            <div class="card">
+                <h4 style="margin-top:0">Monthly income distribution</h4><canvas id="chartIncomeAmount"></canvas>
+                <p class="chart-insight">Most personal incomes are below ₹3000, aligning with typical student or part-time earnings.</p>
+            </div>
+            <div class="card">
+                <h4 style="margin-top:0">Savings amount</h4><canvas id="chartSavingsAmount"></canvas>
+                <p class="chart-insight">Reflecting lower incomes, the majority of respondents save less than ₹1000 per month.</p>
+            </div>
+            <div class="card">
+                <h4 style="margin-top:0">Where they save</h4><canvas id="chartSaveWhere"></canvas>
+                <p class="chart-insight">While many use bank accounts, a large number of youths still rely on keeping physical cash for their savings.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Spending -->
+    <section id="spending" class="card" style="display:none">
+        <div class="section-title"><h2 style="margin:0">Spending Habits</h2></div>
+        <div class="grid">
+            <div class="card">
+                <h4 style="margin-top:0">Top spending categories</h4><canvas id="chartSpendingCategories"></canvas>
+                <p class="chart-insight">"Food" is the dominant spending category, followed by "Transport," which is typical for a student demographic.</p>
+            </div>
+            <div class="card">
+                <h4 style="margin-top:0">Impulse & Guilt</h4><canvas id="chartImpulseGuilt"></canvas>
+                <p class="chart-insight">Impulse purchases are common, and a majority feel guilt about their spending, showing a conflict between desire and financial prudence.</p>
+            </div>
+            <div class="card">
+                <h4 style="margin-top:0">What influences spending</h4><canvas id="chartSpendingInfluence"></canvas>
+                <p class="chart-insight">"Need" and "Mood" are the strongest drivers of spending, far outweighing external pressures like ads or peers.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Literacy -->
+    <section id="literacy" class="card" style="display:none">
+        <div class="section-title"><h2 style="margin:0">Financial Literacy & Awareness</h2></div>
+        <div class="grid">
+            <div class="card">
+                <h4 style="margin-top:0">Budgeting & Awareness</h4><canvas id="chartLiteracyAware"></canvas>
+                <p class="chart-insight">While awareness of concepts like inflation is high, there's a near-even split between those who prepare a budget and those who don't.</p>
+            </div>
+            <div class="card">
+                <h4 style="margin-top:0">Sources of knowledge</h4><canvas id="chartSources"></canvas>
+                <p class="chart-insight">Family and Social Media are the primary sources of financial knowledge, surpassing formal education from school or college.</p>
+            </div>
+            <div class="card">
+                <h4 style="margin-top:0">Comparison behaviour</h4><canvas id="chartCompareProgram"></canvas>
+                <p class="chart-insight">While most compare prices before buying, very few have ever attended a formal financial education program.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Attitudes -->
+    <section id="attitudes" class="card" style="display:none">
+        <div class="section-title"><h2 style="margin:0">Attitudes & Confidence</h2></div>
+        <div class="grid">
+            <div class="card">
+                <h4 style="margin-top:0">Confidence in managing finances</h4><canvas id="chartConfidence"></canvas>
+                <p class="chart-insight">Confidence is generally average-to-high, but a notable number of respondents still rate their confidence level as low.</p>
+            </div>
+            <div class="card">
+                <h4 style="margin-top:0">Interest in learning personal finance</h4><canvas id="chartInterest"></canvas>
+                <p class="chart-insight">There is an overwhelming interest in learning more about personal finance, indicating a highly receptive audience for educational content.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Investment -->
+    <section id="investment" class="card" style="display:none">
+        <div class="section-title"><h2 style="margin:0">Investment Behaviour</h2></div>
+        <div class="grid">
+            <div class="card">
+                <h4 style="margin-top:0">Ideal age to start investing</h4><canvas id="chartInvestAge"></canvas>
+                <p class="chart-insight">The ideal age to start is perceived to be later than advisors recommend, pointing to a cautious or delayed-action mindset.</p>
+            </div>
+            <div class="card">
+                <h4 style="margin-top:0">Investment awareness types</h4><canvas id="chartInvestTypes"></canvas>
+                <p class="chart-insight">Awareness of traditional options like Stocks and Mutual Funds is high, alongside strong awareness of newer options like SIPs.</p>
+            </div>
+            <div class="card">
+                <h4 style="margin-top:0">Barriers to investing</h4><canvas id="chartInvestBarriers"></canvas>
+                <p class="chart-insight">"Lack of Knowledge" and "No Income" are the top barriers, showing education and financial capacity are the key hurdles.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Conclusion -->
+    <section id="conclusion" class="card" style="display:none">
+        <div class="section-title"><h2>Conclusion & Core Insights from the Data</h2></div>
+            <div class="card">
+                <h4 style="margin-top:0">1. The Aspiration-Action Gap</h4>
+                <p class="small">A primary insight from the survey is the significant gap between financial aspiration and practical action. An overwhelming majority of respondents express a strong interest in learning about personal finance, and most believe investing should start early. However, this high level of interest does not translate into formal learning, with very few having attended any financial programs. This indicates a highly motivated but underserved demographic, eager for financial knowledge but currently lacking the channels to act on that ambition effectively.</p>
+            </div>
+            <div class="card">
+                <h4 style="margin-top:0">2. The Digital Dilemma: Convenience Over Credibility</h4>
+                <p class="small">The data reveals a heavy reliance on informal, digital-first sources for financial education. "Social Media" and "Family" rank as the top sources of knowledge, far outpacing formal education. While accessible, these channels can promote speculative behavior and are often influenced by trends rather than sound principles. This "Digital Dilemma" is a core theme: youth are choosing convenient but less reliable sources, contributing to "Lack of Knowledge" being the single biggest barrier to investing.</p>
+            </div>
+            <div class="card">
+                <h4 style="margin-top:0">3. The Confidence Paradox</h4>
+                <p class="small">There appears to be a paradox in self-perceived financial confidence. A healthy number of students rate their money management confidence as average to high. However, this is contrasted by spending habits that suggest a lack of control, such as a high frequency of impulse purchases and a strong influence of non-essential factors like "Discounts" on their spending decisions. This suggests their confidence may be more a reflection of comfort with digital payment tools rather than a deep understanding of core financial principles.</p>
+            </div>
+            <div class="card">
+                <h4 style="margin-top:0">Actionable Recommendations</h4>
+                 <p class="small">Based on these insights, we propose: <em>"1. **Educational Initiative:** Universities must bridge the Aspiration-Action gap by integrating practical, workshop-style financial modules into the curriculum. 2. **FinTech Opportunity:** A financial app that combines reliable, gamified learning with micro-investment tools could be highly effective. 3. **Strategic Content:** Financial educators should focus content on moving beyond awareness to actionable steps, helping to close the Confidence Paradox by building genuine skills."</em></p>
+            </div>
+    </section>
+
+    <footer class="small">Built with Chart.js — Replace the sample data below with your survey response counts.</footer>
+</div>
+
+<script>
+// The JavaScript remains the same as your previous version.
+// No changes are needed here for these enhancements.
+const DATA = {
+    // Demographics (Q1-Q4)
+    age: { "17":6, "18": 31, "19": 60, "20": 25, "21": 7, "22": 4, "23": 1, "24": 4, "25+": 4},
+    gender: { "Male": 86, "Female": 56, "Other/Prefer not": 0 },
+    education: { "12th": 15, "Undergrad": 115, "Postgrad": 8, "Diploma":1, "PhD": 1, "D pharma": 1 },
+    employment: { "Part-time": 21, "Full-time": 5, "Self-employed": 6, "Studying": 110 },
+    // ... rest of your data ...
+    incomeSource: { "Yes (have income)": 57, "No (no income)": 85 },
+    incomeAmount: { "0-500": 57, "500-1000": 25, "1000-3000": 20, "3000-5000": 14, "5000+": 24 },
+    saveAmount: { "0-500": 83, "500-1000": 33, "1000-2000": 9, "2000-3000": 7, "3000-5000": 3, "5000+": 3},
+    saveWhere: { "Cash": 81, "Bank": 53, "Digital Wallet": 37, "FD": 4, "Don't save": 14 },
+    spendingCategories: { "Food": 114, "Transport": 78, "Bills": 45, "Entertainment": 28, "Shopping": 45, "Education": 53 },
+    impulse: { "Regularly": 14, "Occasionally": 53, "Rarely": 53, "Never": 22 },
+    spendingInfluence: { "Discounts": 41, "Peer pressure": 8, "Ads/Social": 16, "Mood": 69, "Need": 80 },
+    guilt: { "Always": 41, "Often": 21, "Sometimes": 57, "Never": 23 },
+    prepareBudget: { "Yes": 46, "No": 56, "Ask guardians": 40 },
+    awareInterestInflation: { "Yes": 95, "No": 47 },
+    compareBeforeBuying: { "Yes": 92, "No": 50 },
+    attendedProgram: { "Yes": 41, "No": 101 },
+    sources: { "School/College": 71, "Family": 90, "Social Media": 72, "Books": 30, "Classes": 17, "None": 17 },
+    knowDiffSaveInvest: { "Yes": 95, "No": 25 },
+    confidence: { "1 (Low)": 9, "2": 14, "3": 40, "4": 46, "5 (High)": 33 },
+    interestLearn: { "Definitely": 90, "Not sure": 35, "Not interested": 17 },
+    investAge: { "<20": 37, "20-25": 19, "25-30": 40, "30+": 46 },
+    investTypes: { "Stocks": 84, "Mutual Funds": 78, "FD": 69, "Crypto": 45, "SIP": 65, "Don't know": 34 },
+    investBarriers: { "Lack of knowledge": 64, "Fear of loss": 43, "No income": 58, "Lack of interest": 17, "Already investing": 26 }
+};
+
+(function displayTotalRespondents() {
+    const total = Object.values(DATA.gender).reduce((sum, count) => sum + count, 0);
+    const displayElement = document.getElementById('totalRespondents');
+    if (displayElement && total > 0) {
+        displayElement.textContent = `Based on ${total} survey respondents.`;
+    }
+})();
+
+const createdCharts = new Set();
+Chart.defaults.color = 'rgba(224, 247, 250, 0.9)';
+Chart.defaults.borderColor = 'rgba(0, 229, 255, 0.2)';
+Chart.defaults.font.family = "'Segoe UI', system-ui, Arial, sans-serif";
+
+function generateColors(numColors, hueStart = 180) {
+    const colors = [];
+    const hueStep = 45;
+    for (let i = 0; i < numColors; i++) {
+        const hue = (hueStart + i * hueStep) % 360;
+        colors.push(`hsla(${hue}, 100%, 70%, 0.7)`);
+    }
+    return colors;
+}
+
+function createChart(canvasId, type, data, options = {}) {
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    const colors = generateColors(Object.keys(data).length);
+    const chartData = {
+        labels: Object.keys(data),
+        datasets: [{
+            data: Object.values(data),
+            backgroundColor: colors,
+            borderColor: colors.map(c => c.replace('0.7', '1')),
+            borderWidth: 1,
+            hoverOffset: 4,
+        }]
+    };
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: (type === 'pie' || type === 'doughnut'), position: 'bottom', labels: { padding: 15 } },
+            tooltip: { backgroundColor: 'rgba(13, 26, 38, 0.9)', titleColor: '#00e5ff', bodyColor: '#e0f7fa', padding: 10, cornerRadius: 4, borderColor: 'rgba(0, 229, 255, 0.3)', borderWidth: 1 }
+        },
+        scales: (type === 'bar' || type === 'line') ? {
+            y: { beginAtZero: true, grid: { color: 'rgba(0, 229, 255, 0.1)' } },
+            x: { grid: { color: 'rgba(0, 229, 255, 0.1)' } }
+        } : {}
+    };
+    return new Chart(ctx, { type, data: chartData, options: chartOptions });
+}
+
+function createCombinedChart(canvasId, type, data1, data2, label1, label2) {
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    const labels = [...Object.keys(data1), ...Object.keys(data2)];
+    return new Chart(ctx, {
+        type,
+        data: {
+            labels,
+            datasets: [
+                { label: label1, data: [...Object.values(data1), ...Array(Object.keys(data2).length).fill(0)], backgroundColor: `hsla(180, 100%, 70%, 0.7)` },
+                { label: label2, data: [...Array(Object.keys(data1).length).fill(0), ...Object.values(data2)], backgroundColor: `hsla(225, 100%, 70%, 0.7)` }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { padding: 15 } },
+                 tooltip: { backgroundColor: 'rgba(13, 26, 38, 0.9)', titleColor: '#00e5ff', bodyColor: '#e0f7fa', padding: 10, cornerRadius: 4, borderColor: 'rgba(0, 229, 255, 0.3)', borderWidth: 1, }
+            },
+            scales: { x: { stacked: true, grid: { color: 'rgba(0, 229, 255, 0.1)' } }, y: { stacked: true, beginAtZero: true, grid: { color: 'rgba(0, 229, 255, 0.1)' } } }
+        }
+    });
+}
+
+function initializeChartsForSection(sectionId) {
+    if (createdCharts.has(sectionId)) return;
+    switch(sectionId) {
+        case 'demographics':
+            createChart('chartAge', 'bar', DATA.age);
+            createChart('chartGender', 'doughnut', DATA.gender);
+            createCombinedChart('chartEduEmp', 'bar', DATA.education, DATA.employment, 'Education', 'Employment');
+            break;
+        case 'income':
+            createChart('chartIncomeSource', 'pie', DATA.incomeSource);
+            createChart('chartIncomeAmount', 'bar', DATA.incomeAmount);
+            createChart('chartSavingsAmount', 'bar', DATA.saveAmount);
+            createChart('chartSaveWhere', 'doughnut', DATA.saveWhere);
+            break;
+        case 'spending':
+            createChart('chartSpendingCategories', 'pie', DATA.spendingCategories);
+            createCombinedChart('chartImpulseGuilt', 'bar', DATA.impulse, DATA.guilt, 'Impulse Buys', 'Spending Guilt');
+            createChart('chartSpendingInfluence', 'bar', DATA.spendingInfluence);
+            break;
+        case 'literacy':
+             createCombinedChart('chartLiteracyAware', 'bar', DATA.prepareBudget, DATA.awareInterestInflation, 'Prepares Budget', 'Aware of Inflation');
+             createChart('chartSources', 'bar', DATA.sources);
+             createCombinedChart('chartCompareProgram', 'bar', DATA.compareBeforeBuying, DATA.attendedProgram, 'Compares Before Buying', 'Attended Program');
+            break;
+        case 'attitudes':
+            createChart('chartConfidence', 'bar', DATA.confidence);
+            createChart('chartInterest', 'pie', DATA.interestLearn);
+            break;
+        case 'investment':
+            createChart('chartInvestAge', 'bar', DATA.investAge);
+            createChart('chartInvestTypes', 'bar', DATA.investTypes);
+            createChart('chartInvestBarriers', 'bar', DATA.investBarriers);
+            break;
+    }
+    createdCharts.add(sectionId);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const targetId = btn.getAttribute('data-target');
+            document.querySelectorAll('section').forEach(sec => sec.style.display = 'none');
+            const targetElement = document.getElementById(targetId);
+            if(targetElement) targetElement.style.display = 'block';
+            if (targetId !== 'overview' && targetId !== 'conclusion') {
+                initializeChartsForSection(targetId);
+            }
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        });
+    });
+    document.getElementById('overview').style.display = 'block';
+});
+</script>
+</body>
+</html>
+
+
